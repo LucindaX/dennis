@@ -11,11 +11,11 @@ routes.get('/', (req, res, next) => {
   var type = req.query.type;
   console.log(type);
   conditions = type ? { type: type } : {}
-  Event.find(conditions).populate('actor').populate('repo').exec()
-  .then( docs => {
-    res.status(200).send(docs);
-  })
-  .catch( e => next(e) ) 
+  var stream = Event.find(conditions).populate('actor').populate('repo').batchSize(100).cursor();
+  res.writeHead(200, {"Content-Type": "application/json"});
+  stream.on('error', err => next(err));
+  stream.on('data', doc => res.write(JSON.stringify(doc)));
+  stream.on('close', () => res.end());
 })
 
 module.exports = routes;
