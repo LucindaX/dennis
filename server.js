@@ -26,8 +26,8 @@ app.get('/',function(req, res, next){
   res.send('Welcome To API');
 });
 
-app.use('/repos', require('./routes/repos'));
-app.use('/actors', require('./routes/actors'));
+//app.use('/repos', require('./routes/repos'));
+//app.use('/actors', require('./routes/actors'));
 app.use('/events', require('./routes/events'));
 
 app.use(function(err, req, res, next){
