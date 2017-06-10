@@ -4,7 +4,8 @@ var Repo = require('../models/repo');
 var Actor = require('../models/actor');
 var pagination = require('../lib/pagination');
 var Promise = require('bluebird');
- 
+var _ = require('lodash');
+
 routes.get('/', (req, res, next) => {
   
   var from = req.query.from;
@@ -22,7 +23,7 @@ routes.get('/', (req, res, next) => {
       docs = docs.slice(0,-1);
       hash.repos = docs;
       return Event.aggregate([
-             { $match:  { repos: { '$in': docs.map( a => a._id ) } }},
+             { $match:  { repo: { '$in': docs.map( a => a._id ) } }},
              { $group: {
                  _id: { repo: '$repo', actor: '$actor' },
                  count: { '$sum': 1 },
@@ -38,9 +39,24 @@ routes.get('/', (req, res, next) => {
              ])
              .exec()
   })
-  .then( repos => {
-    // insert repo object instead of _id returned for it
-    // inster user object instead of user id returned for it ( fetch from db each user )
+  .then( docs => {
+    promises = [];
+    actors = []
+    for(var i = 0; i< hash.repos.length; i++){
+      var doc = _.find(docs, [ '_id', hash.repos[i]._id ]);
+      hash.repos[i] = hash.repos[i].toObject()
+      hash.repos[i].topContributer = doc.actor;
+      actors.push(doc.actor);
+    }
+    return Actor.find({ _id: { $in: actors } }).exec();
+    
+  })
+  .then( docs => {
+    for(var i = 0; i < hash.repos.length; i++){
+      var actor = _.find(docs, [ '_id', hash.repos[i].topContributer ]);
+      hash.repos[i].topContributer = actor;
+    }
+    res.status(200).send(hash);  
   })
   .catch( e => next(e) );  
 })

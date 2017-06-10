@@ -28,16 +28,14 @@ routes.get('/', (req, res, next) => {
 
 })
 
-routes.get('/:id/repos', (req, res, next) => {
-  var id = req.params.id;
-  try { parseInt(id) }
-  catch(e) { next(e) }
+routes.get('/:login/repos', (req, res, next) => {
+  var login = req.params.login;
   hash = {};
-  Actor.find({ _id: id}).exec()
+  Actor.findOne({ login: login}).exec()
   .then( doc => {
-    if (!doc) res.status(404).send({ message: 'actor not found'});
+    //if (!doc) res.status(404).send({ message: 'actor not found'});
     hash.actor = doc;
-    return Event.find({ actor: id }).populate('repo').select('repo').exec();
+    return Event.find({ actor: doc._id }).populate('repo').select('repo').exec();
   })
   .then( docs => {
     var repos = docs.map( a => a.repo );
@@ -45,6 +43,34 @@ routes.get('/:id/repos', (req, res, next) => {
     res.status(200).send(hash)
   })
   .catch( e => { next(e) })
+});
+
+routes.get('/:login/topRepo', (req, res, next) => {
+  var login = req.params.login;
+  hash = {};
+  Actor.findOne({ login: login}).exec()
+  .then( doc => {
+    //if(!doc)
+    hash.actor = doc;
+    return Event.aggregate([
+      { $match: { actor: doc.id } },
+      { $group: { _id: '$repo', count: { $sum: 1 } } },
+      { $sort: { count: -1 }},
+      { $group: { _id: '$_id', contributions: { $max: '$count' } } }
+    ]).exec();
+  })
+  .then( doc => {
+    //if(!doc.length) res.status(200).send({ message: 'Actor has no contributions' });
+    hash.contributions = doc[0].contributions;
+    return Repo.findOne({ _id: doc[0]._id}).exec()
+  })
+  .then( doc => {
+    if(!doc) return res.status(404).send({ message: 'Repo not found' });
+    hash.repo = doc;
+    res.status(200).send(hash);
+  })
+  .catch( e => next(e) )
+
 });
 
 
