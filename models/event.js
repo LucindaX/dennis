@@ -6,6 +6,6 @@ var eventSchema = new mongoose.Schema({
   actor: {type: Number, ref: 'Actor'},
   repo: {type: Number, ref: 'Repo'},
   created_at: Date
-});
+}, { versionKey: false });
 eventSchema.plugin(findOrCreate);
 module.exports = mongoose.model('Event', eventSchema);

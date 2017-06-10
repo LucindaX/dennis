@@ -6,7 +6,7 @@ var actorSchema = new mongoose.Schema({
   gravatar_id: String,
   url: {type: String, required: true},
   avatar_url: String
-}); 
+}, { versionKey: false }); 
 
 actorSchema.plugin(findOrCreate);
 module.exports = mongoose.model('Actor', actorSchema);
