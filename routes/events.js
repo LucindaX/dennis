@@ -17,7 +17,7 @@ routes.get('/', (req, res, next) => {
   var from = req.query.from;
   var repo = req.query.repo;
   
-  conditions = type ? { type: type } : {}
+  conditions = type ? { type: type.toLowerCase() } : {}
   if (repo) conditions.repo = parseInt(repo);
   if (from) conditions.created_at = {'$gte': new Date(parseInt(from)) }
   

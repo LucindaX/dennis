@@ -37,7 +37,7 @@ routes.get('/', (req, res, next) => {
 **/
 
 routes.get('/:login/repos', (req, res, next) => {
-  var login = req.params.login;
+  var login = req.params.login.toLowerCase();
   hash = {};
   Actor.findOne({ login: login}).exec()
   .then( doc => {
@@ -64,7 +64,7 @@ routes.get('/:login/repos', (req, res, next) => {
 **/
 
 routes.get('/:login/topRepo', (req, res, next) => {
-  var login = req.params.login;
+  var login = req.params.login.toLowerCase();
   hash = {};
   Actor.findOne({ login: login}).exec()
   .then( doc => {
@@ -103,7 +103,7 @@ routes.get('/:login/topRepo', (req, res, next) => {
   * with actor through login
 **/
 routes.delete('/:login/events', (req, res, next) => {
-  var login = req.params.login;
+  var login = req.params.login.toLowerCase();
   Actor.findOne({ login: login }).exec()
   .then( doc => {
     if(!doc) throw new NotFoundError('actor not found');

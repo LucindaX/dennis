@@ -7,5 +7,12 @@ var eventSchema = new mongoose.Schema({
   repo: {type: Number, ref: 'Repo'},
   created_at: Date
 }, { versionKey: false });
+
+
+eventSchema.pre('save', function(next){
+  this.type = this.type.toLowerCase();
+  next();
+})
+
 eventSchema.plugin(findOrCreate);
 module.exports = mongoose.model('Event', eventSchema);
