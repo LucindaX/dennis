@@ -3,6 +3,8 @@ var Event = require('../models/event');
 var Repo = require('../models/repo');
 var Actor = require('../models/actor');
 var pagination = require('../lib/pagination');
+var NotFoundError = require('../lib/errors/not-found-error');
+var EmptySetError = require('../lib/errors/empty-set-error');
 
 /**
  * GET /actors/
@@ -33,7 +35,7 @@ routes.get('/:login/repos', (req, res, next) => {
   hash = {};
   Actor.findOne({ login: login}).exec()
   .then( doc => {
-    //if (!doc) res.status(404).send({ message: 'actor not found'});
+    if(!doc)  throw new NotFoundError('actor not found');
     hash.actor = doc;
     return Event.find({ actor: doc._id }).populate('repo').select('repo').exec();
   })
@@ -42,7 +44,10 @@ routes.get('/:login/repos', (req, res, next) => {
     hash.repos = repos;
     res.status(200).send(hash)
   })
-  .catch( e => { next(e) })
+  .catch( e => { 
+    if( e instanceof NotFoundError ) res.status(e.status).send({ message: e.message });
+    else next(e); 
+  })
 });
 
 routes.get('/:login/topRepo', (req, res, next) => {
@@ -50,26 +55,32 @@ routes.get('/:login/topRepo', (req, res, next) => {
   hash = {};
   Actor.findOne({ login: login}).exec()
   .then( doc => {
-    //if(!doc)
+    if(!doc) throw new NotFoundError('actor not found');
     hash.actor = doc;
     return Event.aggregate([
-      { $match: { actor: doc.id } },
+      { $match: { actor: doc._id } },
       { $group: { _id: '$repo', count: { $sum: 1 } } },
       { $sort: { count: -1 }},
       { $group: { _id: '$_id', contributions: { $max: '$count' } } }
     ]).exec();
   })
   .then( doc => {
-    //if(!doc.length) res.status(200).send({ message: 'Actor has no contributions' });
+    if(!doc.length) throw new EmptySetError('actor has no contributions');
+    console.log(doc)
     hash.contributions = doc[0].contributions;
     return Repo.findOne({ _id: doc[0]._id}).exec()
   })
   .then( doc => {
-    if(!doc) return res.status(404).send({ message: 'Repo not found' });
+    if(!doc) throw new NotFoundError('Repo not found');
     hash.repo = doc;
     res.status(200).send(hash);
   })
-  .catch( e => next(e) )
+  .catch( e => {
+    if( e instanceof NotFoundError || e instanceof EmptySetError )
+      res.status(e.status).send({ message: e.message });
+    else
+      next(e);
+  })
 
 });
 

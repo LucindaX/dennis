@@ -3,7 +3,7 @@ var Event = require('../models/event');
 var Repo = require('../models/repo');
 var Actor = require('../models/actor');
 var pagination = require('../lib/pagination');
-//var arrayStream = require('../lib/arrayStream');
+//var arrayStream = require('../lib/array-stream');
 //var d = require('domain').create();
 
 /**
