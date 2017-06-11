@@ -35,7 +35,7 @@ The server exposes the API as follows :
 
 `GET /actors/:login/topRepo` : returns actor with top repo that he has contributed to, along with his contribution count to said repo.
 
-`DELETE /actors/:login/events` : deletes all events realted to said actor.
+`DELETE /actors/:login/events` : deletes all events related to said actor.
 
 `GET /repos/` : returns all repos with top contributer (actor) for each. Also paginated with reference links.
 
