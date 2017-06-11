@@ -6,10 +6,10 @@ var pagination = require('../lib/pagination');
 var NotFoundError = require('../lib/errors/not-found-error');
 var EmptySetError = require('../lib/errors/empty-set-error');
 
-/**
- * GET /actors/
- * return all actors
-*/ 
+/** 
+  * GET /actors/
+  * return all actors 
+**/
 routes.get('/', (req, res, next) => {
   
   var from = req.query.from;  
@@ -30,6 +30,12 @@ routes.get('/', (req, res, next) => {
 
 })
 
+/**
+  * GET /actors/:login/repos
+  * return actor with all
+  * repos contributed to
+**/
+
 routes.get('/:login/repos', (req, res, next) => {
   var login = req.params.login;
   hash = {};
@@ -49,6 +55,13 @@ routes.get('/:login/repos', (req, res, next) => {
     else next(e); 
   })
 });
+
+/**
+  * GET /actors/:login/topRepo
+  * return actor with the top
+  * contributed to repo by actor
+  * login.
+**/
 
 routes.get('/:login/topRepo', (req, res, next) => {
   var login = req.params.login;
@@ -82,6 +95,25 @@ routes.get('/:login/topRepo', (req, res, next) => {
       next(e);
   })
 
+});
+
+/**
+  * DELETE /actors/:login/events
+  * deletes all events associated
+  * with actor through login
+**/
+routes.delete('/:login/events', (req, res, next) => {
+  var login = req.params.login;
+  Actor.findOne({ login: login }).exec()
+  .then( doc => {
+    if(!doc) throw new NotFoundError('actor not found');
+    return Event.remove({ actor: doc._id}).exec()
+  })
+  .then( () => { res.status(200).send({ message: 'events deleted'}) })
+  .catch( e => {
+    if( e instanceof NotFoundError ) res.status(e.status).send({ message: e.message });
+    else next(e);
+  });
 });
 
 

@@ -3,8 +3,13 @@ var Event = require('../models/event');
 var Repo = require('../models/repo');
 var Actor = require('../models/actor');
 var pagination = require('../lib/pagination');
-var Promise = require('bluebird');
 var _ = require('lodash');
+
+/**
+  * GET /repos/
+  * returns repos with top contributer
+  * for each
+**/
 
 routes.get('/', (req, res, next) => {
   
@@ -40,7 +45,6 @@ routes.get('/', (req, res, next) => {
              .exec()
   })
   .then( docs => {
-    promises = [];
     actors = []
     for(var i = 0; i< hash.repos.length; i++){
       var doc = _.find(docs, [ '_id', hash.repos[i]._id ]);

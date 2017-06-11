@@ -7,9 +7,10 @@ var pagination = require('../lib/pagination');
 //var d = require('domain').create();
 
 /**
- * GET /events/
- * params type, from, repo
-*/ 
+  * GET /events/
+  * params type, from, repo
+  * return all events filtered by params
+**/ 
 routes.get('/', (req, res, next) => {
   
   var type = req.query.type;
